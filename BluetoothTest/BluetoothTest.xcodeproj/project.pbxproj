@@ -290,6 +290,8 @@
 				DEVELOPMENT_TEAM = 6HA2CYDMF3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BluetoothTest/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "블루투스 허용 필요";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "블루투스 허용 필요";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
@@ -318,6 +320,8 @@
 				DEVELOPMENT_TEAM = 6HA2CYDMF3;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BluetoothTest/Info.plist;
+				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "블루투스 허용 필요";
+				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "블루투스 허용 필요";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
