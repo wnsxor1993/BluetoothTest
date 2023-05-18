@@ -22,10 +22,10 @@ class ViewController: UIViewController {
     // MARK: Peripheral
     private var peripheralManager: CBPeripheralManager?
     private var service: CBMutableService?
-    private var characteristic: CBMutableCharacteristic?
+    private var dataCharacteristics: [CBMutableCharacteristic] = []
+    private var characteristicsUUIDs: [UUID] = []
     
     private var serviceUUID: CBUUID?
-    private var characteristicUUID: CBUUID?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -72,7 +72,12 @@ extension ViewController: CBPeripheralManagerDelegate {
         }
         
         print("Start Advertising")
-        self.peripheralManager?.startAdvertising(["Name": "푸코", "ID": "F00987F2-64A0-4127-8C46-594C45D36A63"])
+        self.peripheralManager?.startAdvertising([CBAdvertisementDataLocalNameKey: "푸코", CBAdvertisementDataServiceUUIDsKey: "F00987F2-64A0-4127-8C46-594C45D36A63"])
+    }
+    
+    func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
+        let data: Data = .init()
+        self.sendDataToCentral(which: data, with: central)
     }
 }
 
@@ -110,7 +115,8 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
     
     //장치를 찾았을 때 실행되는 이벤트
     func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
-        print("Name: \(Name), ID: \(ID)")
+        
+        print("Name: \(advertisementData[CBAdvertisementDataLocalNameKey]), ID: \(advertisementData[CBAdvertisementDataServiceUUIDsKey])")
     }
     
     //올바른 장치에 연결되었는지 확인
@@ -127,16 +133,34 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
 private extension ViewController {
     
     func addPeripheralService() {
-        guard let serviceUUID, let characteristicUUID else { return }
+        guard let serviceUUID else { return }
         
+        let uuid: UUID = .init()
         self.service = .init(type: serviceUUID, primary: true)
-        // 일단은 읽기만 가능한 형태로?
-        self.characteristic = .init(type: characteristicUUID, properties: [.read], value: nil, permissions: [.readable])
+        let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+        self.characteristicsUUIDs = [uuid]
         
-        guard let service, let characteristic else { return }
+        self.dataCharacteristics = [characteristic]
         
-        service.characteristics = [characteristic]
+        guard let service else { return }
+        
+        service.characteristics = dataCharacteristics
         self.peripheralManager?.add(service)
+    }
+    
+    // 최초로 데이터를 보낼 때
+    func sendDataToCentral(which imageData: Data, with subscribedCentral: CBCentral) {
+        guard subscribedCentral.identifier.uuidString == "43637A62-FDFF-48F3-8816-F6B141DE7FC9" else {
+            print("Error: Subscribed UUID is \(subscribedCentral.identifier.uuidString)")
+            
+            return
+        }
+        
+        // 여러개의 이미지를 보내기 위해서는 이미지 별로 characteristic이 필요
+        let characteristic = self.dataCharacteristics[0]
+        characteristic.value = imageData
+        
+        peripheralManager?.updateValue(imageData, for: characteristic, onSubscribedCentrals: [subscribedCentral])
     }
 }
 
@@ -151,6 +175,5 @@ private extension ViewController {
         self.centralManager = .init(delegate: self, queue: .global(qos: .background))
         self.peripheralManager = .init(delegate: self, queue: .global(qos: .background))
         self.serviceUUID = .init(string: "F00987F2-64A0-4127-8C46-594C45D36A63")
-        self.characteristicUUID = .init(nsuuid: .init())
     }
 }
