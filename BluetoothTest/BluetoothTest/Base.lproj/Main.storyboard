@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21701" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21678"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -31,11 +31,11 @@
                                 </constraints>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="9XT-bN-4wC">
-                                <rect key="frame" x="121.66666666666669" y="698" width="150" height="60"/>
+                                <rect key="frame" x="50" y="708" width="120" height="50"/>
                                 <color key="backgroundColor" name="AccentColor"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="150" id="4Ox-H2-bFQ"/>
-                                    <constraint firstAttribute="height" constant="60" id="Uso-4V-07C"/>
+                                    <constraint firstAttribute="width" constant="120" id="4Ox-H2-bFQ"/>
+                                    <constraint firstAttribute="height" constant="50" id="Uso-4V-07C"/>
                                 </constraints>
                                 <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <state key="normal" title="Button"/>
@@ -43,7 +43,23 @@
                                     <fontDescription key="titleFontDescription" type="system" pointSize="22"/>
                                 </buttonConfiguration>
                                 <connections>
-                                    <action selector="tapButton:" destination="BYZ-38-t0r" eventType="touchUpInside" id="kVU-ti-O4I"/>
+                                    <action selector="tapConnect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="SS7-aX-kp9"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8xm-Jx-ITZ">
+                                <rect key="frame" x="223" y="708" width="120" height="50"/>
+                                <color key="backgroundColor" red="0.76862745099999996" green="0.35686274509999999" blue="0.27450980390000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="ftO-M5-PQ3"/>
+                                    <constraint firstAttribute="width" constant="120" id="wv6-Eh-6Fp"/>
+                                </constraints>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <state key="normal" title="Button"/>
+                                <buttonConfiguration key="configuration" style="plain" title="해제">
+                                    <fontDescription key="titleFontDescription" type="system" pointSize="22"/>
+                                </buttonConfiguration>
+                                <connections>
+                                    <action selector="tapDisconnect:" destination="BYZ-38-t0r" eventType="touchUpInside" id="VBi-bX-1ii"/>
                                 </connections>
                             </button>
                         </subviews>
@@ -53,16 +69,19 @@
                             <constraint firstItem="Bbq-mV-3K6" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="3YS-1y-WAR"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="9XT-bN-4wC" secondAttribute="bottom" constant="60" id="Caf-rY-U4r"/>
                             <constraint firstItem="Bbq-mV-3K6" firstAttribute="top" secondItem="mdh-uI-PCt" secondAttribute="bottom" constant="30" id="Cc0-Yr-kSh"/>
-                            <constraint firstItem="9XT-bN-4wC" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="GX6-Ru-zPy"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Bbq-mV-3K6" secondAttribute="trailing" constant="130" id="IrD-r8-3rU"/>
+                            <constraint firstItem="9XT-bN-4wC" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="50" id="T0B-Vj-81z"/>
                             <constraint firstItem="mdh-uI-PCt" firstAttribute="top" secondItem="6Tk-OE-BBY" secondAttribute="top" constant="150" id="Wze-ea-eJb"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="8xm-Jx-ITZ" secondAttribute="bottom" constant="60" id="YFW-zM-nHd"/>
                             <constraint firstItem="Bbq-mV-3K6" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="130" id="Ywd-zz-Mv4"/>
                             <constraint firstItem="mdh-uI-PCt" firstAttribute="centerX" secondItem="6Tk-OE-BBY" secondAttribute="centerX" id="nxP-cM-kN0"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="8xm-Jx-ITZ" secondAttribute="trailing" constant="50" id="voG-u5-elG"/>
                         </constraints>
                     </view>
                     <connections>
                         <outlet property="actionButton" destination="9XT-bN-4wC" id="pMa-bZ-4aC"/>
                         <outlet property="bluetoothIDLabel" destination="mdh-uI-PCt" id="arQ-In-Hyy"/>
+                        <outlet property="dismissButton" destination="8xm-Jx-ITZ" id="7St-Cl-GKg"/>
                         <outlet property="otherIDStackView" destination="Bbq-mV-3K6" id="JOU-xQ-oos"/>
                     </connections>
                 </viewController>

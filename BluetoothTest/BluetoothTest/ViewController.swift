@@ -13,6 +13,7 @@ class ViewController: UIViewController {
     @IBOutlet weak var bluetoothIDLabel: UILabel!
     @IBOutlet weak var otherIDStackView: UIStackView!
     @IBOutlet weak var actionButton: UIButton!
+    @IBOutlet weak var dismissButton: UIButton!
     
     // MARK: Central
     private var centralManager: CBCentralManager?
@@ -35,8 +36,12 @@ class ViewController: UIViewController {
         self.configurePeripheralService()
     }
     
-    @IBAction func tapButton(_ sender: UIButton) {
+    @IBAction func tapConnect(_ sender: UIButton) {
         self.startAdvertising()
+    }
+    
+    @IBAction func tapDisconnect(_ sender: UIButton) {
+        self.stopAdvertising()
     }
 }
 
@@ -182,12 +187,28 @@ private extension ViewController {
         
         peripheralManager?.updateValue(stringData, for: characteristic, onSubscribedCentrals: [subscribedCentral])
     }
+    
+    func stopAdvertising() {
+        self.centralManager?.stopScan()
+        
+        self.peripheralManager?.stopAdvertising()
+        self.peripheralManager?.removeAllServices()
+        
+        if let isEndAdvertise = peripheralManager?.isAdvertising {
+            print("Stop Advertising: \(!isEndAdvertise)")
+        }
+        
+        if let isEndScan = centralManager?.isScanning {
+            print("Stop Scanning: \(!isEndScan)")
+        }
+    }
 }
 
 private extension ViewController {
     
     func configureAttributes() {
         self.actionButton.layer.cornerRadius = 15
+        self.dismissButton.layer.cornerRadius = 15
         self.bluetoothIDLabel.sizeToFit()
     }
     
@@ -202,7 +223,7 @@ private extension ViewController {
         
         let uuid: UUID = .init()
         self.service = .init(type: peripheralServiceUUID, primary: true)
-        let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+        let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read], value: nil, permissions: [.readable])
         self.characteristicsUUIDs = [uuid]
         
         self.dataCharacteristics = [characteristic]
