@@ -26,17 +26,17 @@ class ViewController: UIViewController {
     private var characteristicsUUIDs: [UUID] = []
     
     private var peripheralServiceUUID: CBUUID?
-    private var centralServiceUUID: CBUUID?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         self.configureAttributes()
         self.configureIntializing()
+        self.configurePeripheralService()
     }
     
     @IBAction func tapButton(_ sender: UIButton) {
-        self.addPeripheralService()
+        self.startAdvertising()
     }
 }
 
@@ -73,10 +73,10 @@ extension ViewController: CBPeripheralManagerDelegate {
             print("Get Error: \(error.localizedDescription)")
         }
         
-        guard let peripheralServiceUUID else { return }
-        
-        self.peripheralManager?.startAdvertising([CBAdvertisementDataLocalNameKey: "푸코", CBAdvertisementDataServiceUUIDsKey: peripheralServiceUUID])
-        print("Start Advertising")
+        if let peripheralManager {
+            let isRight = (peripheralManager === peripheral)
+            print("Start Advertising: \(isRight)")
+        }
     }
     
     func peripheralManager(_ peripheral: CBPeripheralManager, central: CBCentral, didSubscribeTo characteristic: CBCharacteristic) {
@@ -141,7 +141,7 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
     
     // 올바른 장치에 연결되었는지 확인
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        
+        print("Connected peripheral: \(peripheral.identifier.uuidString)")
     }
     
     // 연결된 peripheral에서 characteristic이 업데이트되었을 때
@@ -168,30 +168,14 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
 
 private extension ViewController {
     
-    func addPeripheralService() {
+    func startAdvertising() {
         guard let peripheralServiceUUID else { return }
         
-        let uuid: UUID = .init()
-        self.service = .init(type: peripheralServiceUUID, primary: true)
-        let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
-        self.characteristicsUUIDs = [uuid]
-        
-        self.dataCharacteristics = [characteristic]
-        
-        guard let service else { return }
-        
-        service.characteristics = dataCharacteristics
-        self.peripheralManager?.add(service)
+        self.peripheralManager?.startAdvertising([CBAdvertisementDataLocalNameKey: "푸코", CBAdvertisementDataServiceUUIDsKey: [peripheralServiceUUID]])
     }
     
-    // 최초로 데이터를 보낼 때
+    // 최초로 데이터를 보낼 때?? 새로 만드는 것도 이걸로 되려나??
     func sendDataToCentral(which stringData: Data, with subscribedCentral: CBCentral) {
-        guard subscribedCentral.identifier.uuidString == "43637A62-FDFF-48F3-8816-F6B141DE7FC9" else {
-            print("Error: Subscribed UUID is \(subscribedCentral.identifier.uuidString)")
-            
-            return
-        }
-        
         // 여러개의 이미지를 보내기 위해서는 이미지 별로 characteristic이 필요
         let characteristic = self.dataCharacteristics[0]
         characteristic.value = stringData
@@ -211,6 +195,21 @@ private extension ViewController {
         self.centralManager = .init(delegate: self, queue: .global(qos: .background))
         self.peripheralManager = .init(delegate: self, queue: .global(qos: .background))
         self.peripheralServiceUUID = .init(string: "F00987F2-64A0-4127-8C46-594C45D36A63")
-        self.centralServiceUUID = .init(string: "43637A62-FDFF-48F3-8816-F6B141DE7FC9")
+    }
+    
+    func configurePeripheralService() {
+        guard let peripheralServiceUUID else { return }
+        
+        let uuid: UUID = .init()
+        self.service = .init(type: peripheralServiceUUID, primary: true)
+        let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read, .write], value: nil, permissions: [.readable, .writeable])
+        self.characteristicsUUIDs = [uuid]
+        
+        self.dataCharacteristics = [characteristic]
+        
+        guard let service else { return }
+        
+        service.characteristics = dataCharacteristics
+        self.peripheralManager?.add(service)
     }
 }
