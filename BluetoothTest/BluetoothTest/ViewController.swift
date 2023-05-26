@@ -28,6 +28,8 @@ class ViewController: UIViewController {
     
     private var peripheralServiceUUID: CBUUID?
     
+    private var conncetedPeripheral: [CBPeripheral] = []
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -136,17 +138,48 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
             return
         }
         
-        guard peripheral.services?.first?.uuid.uuidString == peripheralServiceUUID?.uuidString else {
-            print("Discovered perhiperal not equal service uuid, it is \(String(describing: peripheral.services?.first?.uuid.uuidString))")
+        guard let peripheralServiceUUID else {
+            print("Peripheral service UUID is not defined")
+            return
+        }
+    
+        guard let asvertisementArray = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [Any], let advertisementUUID = asvertisementArray.first as? String else {
+            print(advertisementData[CBAdvertisementDataServiceUUIDsKey])
+            print("Peripheral advertisementData is not defined")
             return
         }
         
-        centralManager?.connect(peripheral, options: nil)
+        guard peripheralServiceUUID.uuidString == advertisementUUID else { return }
+        
+        // peripheral에 대한 검색이 이뤄지지 않으면 service가 nil로 출력
+        if peripheral.services == nil {
+            centralManager?.connect(peripheral)
+            self.conncetedPeripheral.append(peripheral)
+            peripheral.delegate = self
+            peripheral.discoverServices([peripheralServiceUUID])
+
+        } else {
+            print("Discover End!")
+        }
     }
     
     // 올바른 장치에 연결되었는지 확인
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         print("Connected peripheral: \(peripheral.identifier.uuidString)")
+    }
+    
+    // Discover된 Service의 peripheral
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        if let error {
+            print("Discover Error: \(error.localizedDescription)")
+        }
+        
+        guard let peripheralServiceUUID else {
+            print("Peripheral service UUID is not defined.")
+            return
+        }
+        
+        self.connectPeripheral(peripheral, serviceUUID: peripheralServiceUUID)
     }
     
     // 연결된 peripheral에서 characteristic이 업데이트되었을 때
@@ -202,6 +235,15 @@ private extension ViewController {
             print("Stop Scanning: \(!isEndScan)")
         }
     }
+    
+    func connectPeripheral(_ peripheral: CBPeripheral, serviceUUID: CBUUID) {
+        guard let service = peripheral.services?.first, service.uuid == serviceUUID else {
+            print("Discovered peripheral does not have the expected service UUID.")
+            return
+        }
+        
+        centralManager?.connect(peripheral, options: nil)
+    }
 }
 
 private extension ViewController {
@@ -225,6 +267,7 @@ private extension ViewController {
         self.service = .init(type: peripheralServiceUUID, primary: true)
         let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read], value: nil, permissions: [.readable])
         self.characteristicsUUIDs = [uuid]
+        self.bluetoothIDLabel.text = uuid.uuidString
         
         self.dataCharacteristics = [characteristic]
         
