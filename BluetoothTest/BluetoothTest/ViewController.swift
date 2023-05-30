@@ -22,6 +22,7 @@ class ViewController: UIViewController {
     
     // MARK: Peripheral
     private var peripheralManager: CBPeripheralManager?
+    private var sendPeripheral: CBPeripheral?
     private var service: CBMutableService?
     private var dataCharacteristics: [CBMutableCharacteristic] = []
     private var characteristicsUUIDs: [UUID] = []
@@ -94,6 +95,28 @@ extension ViewController: CBPeripheralManagerDelegate {
             self.sendDataToCentral(which: data, with: central)
         }
     }
+    
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        guard let characteristics = service.characteristics else {
+            print("No service characteristics")
+            return
+        }
+        
+        characteristics.forEach {
+            guard let data = $0.value, let stringFromData = String(data: data, encoding: .utf8) else { return }
+            
+            if stringFromData.contains("F-15K") {
+                DispatchQueue.main.async {
+                    let label: UILabel = .init()
+                    label.text = stringFromData
+                    label.font = .systemFont(ofSize: 15)
+                    label.sizeToFit()
+                    
+                    self.otherIDStackView.addArrangedSubview(label)
+                }
+            }
+        }
+    }
 }
 
 // Central 관련 Delegate
@@ -121,9 +144,9 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
             
             guard let peripheralServiceUUID else { return }
             
-            let options = [CBCentralManagerScanOptionAllowDuplicatesKey: true]
+//            let options = [CBCentralManagerScanOptionAllowDuplicatesKey: true]
             // 검색 중인 서비스의 UUID를 전달
-            self.centralManager?.scanForPeripherals(withServices: [peripheralServiceUUID], options: options)
+            self.centralManager?.scanForPeripherals(withServices: [peripheralServiceUUID], options: nil)
             
         @unknown default:
             print("State is ---")
@@ -143,20 +166,19 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
             return
         }
     
-        guard let asvertisementArray = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [Any], let advertisementUUID = asvertisementArray.first as? String else {
+        guard let asvertisementArray = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID], let advertisementUUID = asvertisementArray.first else {
             print(advertisementData[CBAdvertisementDataServiceUUIDsKey])
             print("Peripheral advertisementData is not defined")
             return
         }
         
-        guard peripheralServiceUUID.uuidString == advertisementUUID else { return }
+        guard peripheralServiceUUID == advertisementUUID else { return }
         
         // peripheral에 대한 검색이 이뤄지지 않으면 service가 nil로 출력
         if peripheral.services == nil {
             centralManager?.connect(peripheral)
             self.conncetedPeripheral.append(peripheral)
             peripheral.delegate = self
-            peripheral.discoverServices([peripheralServiceUUID])
 
         } else {
             print("Discover End!")
@@ -165,6 +187,13 @@ extension ViewController: CBCentralManagerDelegate, CBPeripheralDelegate {
     
     // 올바른 장치에 연결되었는지 확인
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        guard let peripheralServiceUUID else {
+            print("Peripheral service UUID is not defined")
+            return
+        }
+        
+        peripheral.discoverServices([peripheralServiceUUID])
+        
         print("Connected peripheral: \(peripheral.identifier.uuidString)")
     }
     
@@ -255,17 +284,20 @@ private extension ViewController {
     }
     
     func configureIntializing() {
-        self.centralManager = .init(delegate: self, queue: .global(qos: .background))
-        self.peripheralManager = .init(delegate: self, queue: .global(qos: .background))
+        self.centralManager = .init(delegate: self, queue: nil)
+        self.peripheralManager = .init(delegate: self, queue: nil)
         self.peripheralServiceUUID = .init(string: "F00987F2-64A0-4127-8C46-594C45D36A63")
     }
     
     func configurePeripheralService() {
         guard let peripheralServiceUUID else { return }
         
+        let sendString: String = "F-15K"
+        let data: Data? = sendString.data(using: .utf8)
+        
         let uuid: UUID = .init()
         self.service = .init(type: peripheralServiceUUID, primary: true)
-        let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read], value: nil, permissions: [.readable])
+        let characteristic: CBMutableCharacteristic = .init(type: .init(nsuuid: uuid), properties: [.read], value: data, permissions: [.readable])
         self.characteristicsUUIDs = [uuid]
         self.bluetoothIDLabel.text = uuid.uuidString
         
